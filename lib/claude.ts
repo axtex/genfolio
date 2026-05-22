@@ -1,16 +1,6 @@
-/**
- * Claude API service.
- *
- * Takes a developer's GitHub repos and uses Claude to produce:
- *   - A professional 2-3 sentence bio (first person)
- *   - A crisp one-sentence project description per repo
- *
- * Uses prompt caching on the stable system prompt so repeated calls
- * (e.g. when a user refreshes their dashboard) are fast and cheap.
- */
-
 import Anthropic from "@anthropic-ai/sdk";
-import type { GitHubRepo } from "@/lib/github";
+import { unstable_cache } from "next/cache";
+import type { GitHubUser, Repo } from "@/lib/github";
 
 export interface PortfolioContent {
   bio: string;
@@ -22,8 +12,6 @@ export interface PortfolioContent {
 
 const client = new Anthropic();
 
-// The system prompt never changes — mark it ephemeral so the API caches
-// it after the first request. Subsequent calls read from the cache (~10x cheaper).
 const SYSTEM_PROMPT = `You are an expert technical writer who creates compelling developer portfolio content.
 
 Given a list of a developer's GitHub repositories, you produce:
@@ -34,9 +22,9 @@ Rules:
 - Be specific and technical — avoid vague phrases like "powerful tool" or "amazing project"
 - The bio should read naturally, not like a resume bullet
 - Project descriptions should start with a verb (e.g. "Builds...", "Automates...", "Visualizes...")
-- If a repo has no description and no README, write a plausible description based on its name and language`;
+- If a repo has no description and no README, write a plausible description based on its name and language
+- Include exactly one projects entry for every repository in the input list — never return an empty projects array when repos were provided`;
 
-// JSON schema for structured output — guarantees we always get parseable JSON
 const OUTPUT_SCHEMA = {
   type: "object",
   properties: {
@@ -64,25 +52,21 @@ const OUTPUT_SCHEMA = {
   additionalProperties: false,
 };
 
-export async function generatePortfolioContent(
-  repos: GitHubRepo[],
+async function _generatePortfolioContent(
+  repos: Repo[],
   githubUsername: string
 ): Promise<PortfolioContent> {
-  // Trim each repo down to the key signals Claude needs — name, language,
-  // description, and a short README excerpt. Keeps the prompt concise.
   const repoContext = repos.map((repo) => ({
     name: repo.name,
     description: repo.description,
     primary_language: repo.language,
-    stars: repo.stargazers_count,
-    // Trim README to avoid blowing out the context window
+    stars: repo.stars,
     readme_excerpt: repo.readme ? repo.readme.slice(0, 600) : null,
   }));
 
   const response = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 1024,
-    // Structured output ensures we always get valid JSON back — no parsing errors.
     output_config: {
       format: {
         type: "json_schema",
@@ -93,8 +77,6 @@ export async function generatePortfolioContent(
       {
         type: "text",
         text: SYSTEM_PROMPT,
-        // Cache the stable system prompt — first call writes it, subsequent
-        // calls read from cache at ~10% of normal input token cost.
         cache_control: { type: "ephemeral" },
       },
     ],
@@ -103,18 +85,31 @@ export async function generatePortfolioContent(
         role: "user",
         content: `Generate portfolio content for GitHub user "${githubUsername}".
 
-Here are their ${repos.length} most recently active repositories:
+Here are their ${repos.length} most recently active repositories. Return a projects entry for each one (use the exact name field):
 
 ${JSON.stringify(repoContext, null, 2)}`,
       },
     ],
   });
 
-  // Find the text block in the response (thinking blocks are separate)
   const textBlock = response.content.find((b) => b.type === "text");
   if (!textBlock || textBlock.type !== "text") {
     throw new Error("Claude returned no text content");
   }
 
   return JSON.parse(textBlock.text) as PortfolioContent;
+}
+
+// Cached wrapper — Claude is only called once per user per 24 hours.
+// All three cache entries (user, repos, portfolio) share the same tag
+// so revalidateTag(username) busts them all together.
+export async function generatePortfolio(
+  user: GitHubUser,
+  repos: Repo[]
+): Promise<PortfolioContent> {
+  return unstable_cache(
+    () => _generatePortfolioContent(repos, user.login),
+    ["claude-portfolio", user.login],
+    { tags: [user.login], revalidate: 86400 }
+  )();
 }
