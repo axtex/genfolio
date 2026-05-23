@@ -40,8 +40,9 @@ export default async function DashboardPage() {
             rel="noopener noreferrer"
             className="text-xs text-muted hover:text-fg transition-colors"
           >
-            View public →
+            View public
           </Link>
+          <CopyButton url={portfolioUrl} />
           <form
             className="inline-flex items-center m-0"
             action={async () => {
@@ -57,15 +58,6 @@ export default async function DashboardPage() {
             </button>
           </form>
         </>
-      }
-      banner={
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-[11px] text-muted/60 uppercase tracking-wider font-medium">
-            Live at
-          </span>
-          <code className="font-mono text-xs text-fg/70">{portfolioUrl}</code>
-          <CopyButton url={portfolioUrl} />
-        </div>
       }
       projectsAction={<RefreshButton username={username} />}
     />

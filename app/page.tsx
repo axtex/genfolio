@@ -16,11 +16,9 @@ export default async function Home() {
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-2xl w-full flex flex-col items-center text-center gap-10">
           <h1 className="font-display font-semibold text-5xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight text-fg">
-            Your GitHub.
+            Sign in.
             <br />
-            Your story.
-            <br />
-            Generated.
+            Stand out.
             <span
               className="inline-block w-[3px] h-[0.8em] bg-fg/50 align-middle ml-2 cursor-blink"
               aria-hidden="true"
@@ -71,11 +69,11 @@ export default async function Home() {
       </section>
 
       <footer className="border-t border-border shrink-0">
-        <div className="max-w-3xl mx-auto px-8 py-5 flex items-center justify-between">
+        <div className="px-8 py-5 flex items-center justify-between">
           <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted/50 select-none">
             genfolio
           </span>
-          <span className="font-mono text-[11px] text-muted/40">2025</span>
+          <span className="font-mono text-[11px] text-muted/40">2026</span>
         </div>
       </footer>
     </div>

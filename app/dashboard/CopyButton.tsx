@@ -14,9 +14,9 @@ export default function CopyButton({ url }: { url: string }) {
   return (
     <button
       onClick={copy}
-      className="text-[11px] font-medium text-muted hover:text-fg transition-colors tabular-nums w-10 text-left"
+      className="text-xs text-muted hover:text-fg transition-colors"
     >
-      {copied ? "Copied" : "Copy"}
+      {copied ? "Copied!" : "Copy link"}
     </button>
   );
 }
