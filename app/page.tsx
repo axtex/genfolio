@@ -51,12 +51,9 @@ export default async function Home() {
       <section className="border-t border-border shrink-0">
         <div className="max-w-3xl mx-auto px-8 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
           {[
-            { n: "01", text: "Connect your GitHub account" },
-            {
-              n: "02",
-              text: "Claude writes your bio and project descriptions",
-            },
-            { n: "03", text: "Share your portfolio link in seconds" },
+            { n: "01", text: "Sign in with GitHub." },
+            { n: "02", text: "Get an AI-written bio and project descriptions." },
+            { n: "03", text: "Share your portfolio." },
           ].map(({ n, text }) => (
             <div key={n} className="flex items-start gap-3">
               <span className="font-mono text-xs text-muted/50 tabular-nums mt-0.5 shrink-0">
