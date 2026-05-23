@@ -5,6 +5,7 @@ import PortfolioView from "@/components/PortfolioView";
 import { fetchGitHubUser, getPortfolioRepos } from "@/lib/github";
 import { generatePortfolio } from "@/lib/claude";
 import RefreshButton from "./RefreshButton";
+import CopyButton from "./CopyButton";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -18,6 +19,11 @@ export default async function DashboardPage() {
   const repos = await getPortfolioRepos(username);
   const portfolio = await generatePortfolio(user, repos);
 
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
+  const portfolioUrl = `${baseUrl}/${username}`;
+
   return (
     <PortfolioView
       username={username}
@@ -28,14 +34,13 @@ export default async function DashboardPage() {
       devRaw={process.env.NODE_ENV === "development" ? portfolio : undefined}
       toolbar={
         <>
-          <RefreshButton username={username} />
           <Link
             href={`/${username}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+            className="text-xs text-muted hover:text-fg transition-colors"
           >
-            View public
+            View public →
           </Link>
           <form
             className="inline-flex items-center m-0"
@@ -46,13 +51,23 @@ export default async function DashboardPage() {
           >
             <button
               type="submit"
-              className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+              className="text-xs text-muted hover:text-fg transition-colors"
             >
               Sign out
             </button>
           </form>
         </>
       }
+      banner={
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-[11px] text-muted/60 uppercase tracking-wider font-medium">
+            Live at
+          </span>
+          <code className="font-mono text-xs text-fg/70">{portfolioUrl}</code>
+          <CopyButton url={portfolioUrl} />
+        </div>
+      }
+      projectsAction={<RefreshButton username={username} />}
     />
   );
 }

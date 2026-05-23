@@ -23,7 +23,7 @@ export default function RefreshButton({ username }: { username: string }) {
     <button
       onClick={handleClick}
       disabled={isPending}
-      className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="flex items-center gap-1.5 text-[11px] text-muted hover:text-fg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
     >
       {isPending ? (
         <>
@@ -31,6 +31,7 @@ export default function RefreshButton({ username }: { username: string }) {
             className="animate-spin h-3 w-3 shrink-0"
             viewBox="0 0 24 24"
             fill="none"
+            aria-hidden="true"
           >
             <circle
               className="opacity-25"
@@ -49,9 +50,9 @@ export default function RefreshButton({ username }: { username: string }) {
           Refreshing…
         </>
       ) : done ? (
-        "Updated!"
+        "Updated"
       ) : (
-        "Refresh portfolio"
+        "Refresh"
       )}
     </button>
   );

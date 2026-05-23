@@ -1,4 +1,5 @@
 "use server";
+// Server actions for cache invalidation — lets authenticated users bust their own portfolio cache on demand.
 
 import { updateTag, revalidatePath } from "next/cache";
 import { auth } from "@/auth";

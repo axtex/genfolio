@@ -1,3 +1,4 @@
+// Fetches GitHub user profiles and repo lists using a 3-priority chain (pinned → featured → filtered recent), with 24h server-side caching.
 import { unstable_cache } from "next/cache";
 
 const GITHUB_API = "https://api.github.com";

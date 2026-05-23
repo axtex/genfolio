@@ -1,3 +1,4 @@
+// Calls Claude to generate a portfolio bio and per-project descriptions; results are cached 24h per user with prompt caching on the system prompt.
 import Anthropic from "@anthropic-ai/sdk";
 import { unstable_cache } from "next/cache";
 import type { GitHubUser, Repo } from "@/lib/github";

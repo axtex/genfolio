@@ -1,20 +1,6 @@
 import type { PortfolioContent } from "@/lib/claude";
 import type { GitHubUser, Repo } from "@/lib/github";
-
-const LANG_COLORS: Record<string, string> = {
-  TypeScript: "bg-blue-500",
-  JavaScript: "bg-yellow-400",
-  Python: "bg-green-500",
-  Rust: "bg-orange-500",
-  Go: "bg-cyan-500",
-  Java: "bg-red-500",
-  "C++": "bg-pink-500",
-  C: "bg-gray-500",
-  Ruby: "bg-red-400",
-  Swift: "bg-orange-400",
-  Kotlin: "bg-purple-500",
-  Dart: "bg-teal-500",
-};
+import ExpandableBio from "./ExpandableBio";
 
 type PortfolioViewProps = {
   username: string;
@@ -22,6 +8,8 @@ type PortfolioViewProps = {
   repos: Repo[];
   portfolio: PortfolioContent;
   toolbar?: React.ReactNode;
+  banner?: React.ReactNode;
+  projectsAction?: React.ReactNode;
   showFooter?: boolean;
   devRaw?: PortfolioContent;
 };
@@ -32,122 +20,165 @@ export default function PortfolioView({
   repos,
   portfolio,
   toolbar,
+  banner,
+  projectsAction,
   showFooter = true,
   devRaw,
 }: PortfolioViewProps) {
+  const totalStars = repos.reduce((sum, r) => sum + r.stars, 0);
+
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 font-sans">
+    <div className="min-h-screen bg-bg font-sans">
       {toolbar && (
-        <div className="border-b border-zinc-100 dark:border-zinc-800">
-          <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+        <nav className="border-b border-border bg-bg">
+          <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+            <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted select-none">
               genfolio
             </span>
-            <div className="flex flex-nowrap items-center gap-4">{toolbar}</div>
+            <div className="flex items-center gap-5">{toolbar}</div>
           </div>
+        </nav>
+      )}
+
+      {banner && (
+        <div className="border-b border-border bg-bg">
+          <div className="max-w-3xl mx-auto px-6 py-3">{banner}</div>
         </div>
       )}
 
-      <header className="border-b border-zinc-100 dark:border-zinc-800">
-        <div className="max-w-3xl mx-auto px-6 py-16 flex flex-col items-center text-center gap-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={user.avatar_url}
-            alt={user.name ?? user.login}
-            className="w-24 h-24 rounded-full ring-4 ring-zinc-100 dark:ring-zinc-800"
-          />
-          <div>
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight">
-              {user.name ?? user.login}
-            </h1>
-            <p className="mt-1 text-zinc-500 dark:text-zinc-400">
-              @{user.login}
-            </p>
-          </div>
+      <header className="border-b border-border bg-bg">
+        <div className="max-w-3xl mx-auto px-6 py-7">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-8">
+            {/* Left column — profile */}
+            <div className="flex-1 min-w-0">
+              <div
+                className="flex items-center gap-3 animate-fade-up"
+                style={{ animationDelay: "0ms" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={user.avatar_url}
+                  alt={user.name ?? user.login}
+                  className="w-12 h-12 rounded-full border border-border shrink-0"
+                />
+                <div>
+                  <h1 className="font-display font-semibold text-2xl tracking-tight text-fg leading-tight">
+                    {user.name ?? user.login}
+                  </h1>
+                  <p className="font-mono text-xs text-muted mt-0.5">
+                    @{user.login}
+                  </p>
+                </div>
+              </div>
 
-          <p className="max-w-xl text-zinc-600 dark:text-zinc-300 leading-relaxed">
-            {portfolio.bio}
-          </p>
+              <div
+                className="mt-4 animate-fade-up"
+                style={{ animationDelay: "100ms" }}
+              >
+                <ExpandableBio bio={portfolio.bio} />
+              </div>
+            </div>
+
+            {/* Right column — star count if any */}
+            {totalStars > 0 && (
+              <div
+                className="shrink-0 sm:pt-1 animate-fade-up"
+                style={{ animationDelay: "80ms" }}
+              >
+                <span className="font-mono text-xs opacity-[0.2] select-none tabular-nums">
+                  {totalStars} stars
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-14">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-6">
-          Projects
-        </h2>
+      <main className="bg-subtle">
+        <div className="max-w-3xl mx-auto px-6 py-9">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-[10px] font-semibold tracking-[0.15em] uppercase text-muted">
+              Projects
+            </h2>
+            {projectsAction}
+          </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {portfolio.projects.map((project) => {
-            const repo = repos.find((r) => r.name === project.name);
-            const dotColor =
-              repo?.language && LANG_COLORS[repo.language]
-                ? LANG_COLORS[repo.language]
-                : "bg-zinc-400";
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {portfolio.projects.map((project, i) => {
+              const repo = repos.find((r) => r.name === project.name);
 
-            return (
-              <a
-                key={project.name}
-                href={
-                  repo?.url ?? `https://github.com/${username}/${project.name}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {project.name}
-                  </h3>
-                  {repo?.language && (
-                    <span className="shrink-0 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                      <span
-                        className={`inline-block w-2 h-2 rounded-full ${dotColor}`}
-                      />
-                      {repo.language}
-                    </span>
-                  )}
-                </div>
+              return (
+                <a
+                  key={project.name}
+                  href={
+                    repo?.url ??
+                    `https://github.com/${username}/${project.name}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative block p-4 border border-border border-l-2 bg-bg rounded-lg hover:border-accent/30 hover:border-l-accent hover:-translate-y-0.5 transition-all duration-200 animate-fade-up"
+                  style={{ animationDelay: `${200 + i * 60}ms` }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-display font-semibold text-base text-fg group-hover:text-accent transition-colors leading-snug">
+                      {project.name}
+                    </h3>
+                    <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                      {repo?.language && (
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border border-border text-muted">
+                          {repo.language}
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  {project.description}
-                </p>
-
-                {repo && repo.stars > 0 && (
-                  <p className="mt-3 text-xs text-zinc-400 dark:text-zinc-500">
-                    ★ {repo.stars}
+                  <p className="mt-2 text-sm leading-relaxed text-muted line-clamp-3">
+                    {project.description}
                   </p>
-                )}
-              </a>
-            );
-          })}
-        </div>
 
-        {devRaw && (
-          <details className="mt-10 text-xs text-zinc-400">
-            <summary className="cursor-pointer select-none">
-              Raw Claude output (dev only)
-            </summary>
-            <pre className="mt-2 p-4 bg-zinc-100 dark:bg-zinc-900 rounded-lg overflow-auto">
-              {JSON.stringify(devRaw, null, 2)}
-            </pre>
-          </details>
-        )}
+                  <div className="mt-3 flex items-center justify-between min-h-[1.125rem]">
+                    {repo && repo.stars > 0 ? (
+                      <p className="text-xs text-muted/40">★ {repo.stars}</p>
+                    ) : (
+                      <span />
+                    )}
+                    <span className="font-mono text-[11px] text-muted/60 opacity-0 group-hover:opacity-100 transition-opacity select-none">
+                      ↗ GitHub
+                    </span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+
+          {devRaw && (
+            <details className="mt-8 text-xs text-muted/50">
+              <summary className="cursor-pointer select-none hover:text-muted transition-colors">
+                Raw Claude output (dev only)
+              </summary>
+              <pre className="mt-2 p-4 bg-border/30 rounded-lg overflow-auto text-fg/60">
+                {JSON.stringify(devRaw, null, 2)}
+              </pre>
+            </details>
+          )}
+        </div>
       </main>
 
       {showFooter && (
-        <footer className="border-t border-zinc-100 dark:border-zinc-800 mt-8">
-          <div className="max-w-3xl mx-auto px-6 py-10 text-center">
+        <footer className="border-t border-border bg-bg">
+          <div className="max-w-3xl mx-auto px-6 py-12 text-center">
             <a
               href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors"
+              className="group inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-fg transition-colors"
             >
               Build your genfolio
               <svg
-                className="h-4 w-4"
+                className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={2}
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
