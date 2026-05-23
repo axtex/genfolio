@@ -2,7 +2,12 @@ import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [GitHub],
+  trustHost: true,
+  providers: [
+    GitHub({
+      checks: ["state"], // disable PKCE, use state check only
+    }),
+  ],
   callbacks: {
     async jwt({ token, account, profile }) {
       if (account?.access_token) {
