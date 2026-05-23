@@ -56,10 +56,10 @@ export default async function Home() {
             { n: "03", text: "Share your portfolio." },
           ].map(({ n, text }) => (
             <div key={n} className="flex items-start gap-3">
-              <span className="font-mono text-xs text-muted/50 tabular-nums mt-0.5 shrink-0">
+              <span className="font-mono text-sm text-muted/50 tabular-nums shrink-0">
                 {n}
               </span>
-              <span className="text-sm text-muted leading-relaxed">{text}</span>
+              <span className="text-sm text-muted">{text}</span>
             </div>
           ))}
         </div>
