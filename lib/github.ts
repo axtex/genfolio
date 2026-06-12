@@ -1,10 +1,11 @@
-// Fetches GitHub user profiles and repo lists using a 3-priority chain (pinned → featured → filtered recent), with 24h server-side caching.
+// Fetches GitHub user profiles and repo lists using a 3-priority chain (pinned → featured → filtered recent), filling up to 6 repos, with 24h server-side caching.
 import { unstable_cache } from "next/cache";
 
 const GITHUB_API = "https://api.github.com";
 const GITHUB_GRAPHQL = "https://api.github.com/graphql";
 const README_MAX = 2000;
 const TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000;
+const PORTFOLIO_REPO_LIMIT = 6;
 
 export interface GitHubUser {
   login: string;
@@ -199,24 +200,36 @@ async function fetchFilteredRepos(
   );
 }
 
+function appendUniqueRepos(target: Repo[], source: Repo[]): void {
+  const names = new Set(target.map((r) => r.name));
+  for (const repo of source) {
+    if (names.has(repo.name)) continue;
+    names.add(repo.name);
+    target.push(repo);
+    if (target.length >= PORTFOLIO_REPO_LIMIT) return;
+  }
+}
+
 async function _getPortfolioRepos(
   username: string,
   token?: string,
   savedRepoNames?: string[]
 ): Promise<Repo[]> {
-  let repos = await fetchPinnedRepos(username, token);
+  const repos: Repo[] = [];
 
-  if (repos.length === 0) {
-    repos = await fetchFeaturedRepos(username, token);
+  appendUniqueRepos(repos, await fetchPinnedRepos(username, token));
+
+  if (repos.length < PORTFOLIO_REPO_LIMIT) {
+    appendUniqueRepos(repos, await fetchFeaturedRepos(username, token));
   }
 
-  if (repos.length === 0) {
-    repos = await fetchFilteredRepos(username, token);
+  if (repos.length < PORTFOLIO_REPO_LIMIT) {
+    appendUniqueRepos(repos, await fetchFilteredRepos(username, token));
   }
 
   if (savedRepoNames && savedRepoNames.length > 0) {
     const allowed = new Set(savedRepoNames);
-    repos = repos
+    return repos
       .filter((r) => allowed.has(r.name))
       .sort(
         (a, b) =>
