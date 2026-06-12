@@ -46,36 +46,3 @@ GitHub OAuth
 | Tailwind CSS | GitHub REST + GraphQL API |
 | Fraunces + Plus Jakarta Sans | NextAuth v5 (GitHub OAuth) |
 | | `unstable_cache` + ISR |
-
-## Local development
-
-```bash
-# 1. Clone
-git clone https://github.com/yourusername/genfolio
-cd genfolio
-
-# 2. Install dependencies
-npm install
-
-# 3. Copy the env template
-cp .env.example .env.local
-
-# 4. Fill in your credentials (see table below)
-# 5. Start the dev server
-npm run dev
-```
-
-Open http://localhost:3000.
-
-## Environment variables
-
-| Variable | Description | Required |
-|---|---|---|
-| `AUTH_SECRET` | Random secret for NextAuth session encryption. Generate with `openssl rand -base64 32` | Yes |
-| `AUTH_GITHUB_ID` | GitHub OAuth app client ID. Create at github.com/settings/developers | Yes |
-| `AUTH_GITHUB_SECRET` | GitHub OAuth app client secret | Yes |
-| `ANTHROPIC_API_KEY` | Anthropic API key for Claude. Get from console.anthropic.com | Yes |
-| `GITHUB_TOKEN` | Personal access token for fetching pinned repos via GraphQL. Needs `read:user` and `public_repo` scopes | Yes |
-| `NEXT_PUBLIC_BASE_URL` | Base URL for public portfolio links. Set to your production domain (e.g. `https://genfolio-hazel.vercel.app`) | No (defaults to localhost) |
-
-**GitHub OAuth callback URL to register:** `http://localhost:3000/api/auth/callback/github` (dev) or `https://yourdomain.vercel.app/api/auth/callback/github` (prod)
