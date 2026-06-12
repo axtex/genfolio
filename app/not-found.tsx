@@ -2,9 +2,9 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-6 text-center gap-5">
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center page-x text-center gap-5">
       <p
-        className="font-display font-semibold text-[8rem] sm:text-[11rem] leading-none text-border select-none"
+        className="font-display font-semibold text-[6rem] sm:text-[8rem] md:text-[11rem] leading-none text-border select-none"
         aria-hidden="true"
       >
         404
@@ -16,9 +16,10 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="group inline-flex items-center gap-1.5 text-sm font-medium text-fg hover:text-accent transition-colors"
+          className="group focus-ring inline-flex items-center justify-center gap-1.5 min-h-11 px-4 text-sm font-medium text-fg hover:text-accent active:text-accent transition-colors duration-200"
+          style={{ transitionTimingFunction: "var(--ease-out)" }}
         >
-          Build yours
+          Build your genfolio
           <svg
             className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
             fill="none"

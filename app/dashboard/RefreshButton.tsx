@@ -21,9 +21,13 @@ export default function RefreshButton({ username }: { username: string }) {
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       disabled={isPending}
-      className="flex items-center gap-1.5 text-[11px] text-muted hover:text-fg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-busy={isPending}
+      aria-live="polite"
+      className="tap-target focus-ring gap-1.5 text-xs text-muted hover:text-fg active:text-fg transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+      style={{ transitionTimingFunction: "var(--ease-out)" }}
     >
       {isPending ? (
         <>

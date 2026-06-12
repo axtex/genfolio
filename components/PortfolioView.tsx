@@ -30,24 +30,29 @@ export default function PortfolioView({
   return (
     <div className="min-h-screen bg-bg font-sans">
       {toolbar && (
-        <nav className="border-b border-border bg-bg">
-          <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+        <nav
+          className="border-b border-border bg-bg"
+          aria-label="Dashboard"
+        >
+          <div className="max-w-3xl mx-auto page-x py-3 sm:py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted select-none">
               genfolio
             </span>
-            <div className="flex items-center gap-5">{toolbar}</div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              {toolbar}
+            </div>
           </div>
         </nav>
       )}
 
       {banner && (
         <div className="border-b border-border bg-bg">
-          <div className="max-w-3xl mx-auto px-6 py-3">{banner}</div>
+          <div className="max-w-3xl mx-auto page-x py-3">{banner}</div>
         </div>
       )}
 
       <header className="border-b border-border bg-bg">
-        <div className="max-w-3xl mx-auto px-6 py-7">
+        <div className="max-w-3xl mx-auto page-x py-5 sm:py-7">
           <div className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-8">
             {/* Left column — profile */}
             <div className="flex-1 min-w-0">
@@ -58,7 +63,9 @@ export default function PortfolioView({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={user.avatar_url}
-                  alt={user.name ?? user.login}
+                  alt=""
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-full border border-border shrink-0"
                 />
                 <div>
@@ -95,9 +102,9 @@ export default function PortfolioView({
       </header>
 
       <main className="bg-subtle">
-        <div className="max-w-3xl mx-auto px-6 py-9">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[10px] font-semibold tracking-[0.15em] uppercase text-muted">
+        <div className="max-w-3xl mx-auto page-x py-7 sm:py-9">
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <h2 className="text-xs font-semibold tracking-[0.12em] uppercase text-muted">
               Projects
             </h2>
             {projectsAction}
@@ -116,16 +123,20 @@ export default function PortfolioView({
                   }
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative block p-4 border border-border border-l-2 bg-bg rounded-lg hover:border-accent/30 hover:border-l-accent hover:-translate-y-0.5 transition-all duration-200 animate-fade-up"
-                  style={{ animationDelay: `${200 + i * 60}ms` }}
+                  aria-label={`${project.name} on GitHub`}
+                  className="group relative block p-4 border border-border bg-bg rounded-lg focus-ring active:border-accent/40 active:bg-subtle/50 transition-[color,transform,border-color] duration-200 [@media(hover:hover)]:hover:border-accent/30 [@media(hover:hover)]:hover:-translate-y-0.5 animate-fade-up"
+                  style={{
+                    animationDelay: `${200 + i * 60}ms`,
+                    transitionTimingFunction: "var(--ease-out)",
+                  }}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="font-display font-semibold text-base text-fg group-hover:text-accent transition-colors leading-snug">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <h3 className="font-display font-semibold text-base text-fg [@media(hover:hover)]:group-hover:text-accent transition-colors leading-snug min-w-0">
                       {project.name}
                     </h3>
                     <div className="flex items-center gap-2 shrink-0 mt-0.5">
                       {repo?.language && (
-                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full border border-border text-muted">
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-border text-muted">
                           {repo.language}
                         </span>
                       )}
@@ -142,7 +153,7 @@ export default function PortfolioView({
                     ) : (
                       <span />
                     )}
-                    <span className="font-mono text-[11px] text-muted/60 opacity-0 group-hover:opacity-100 transition-opacity select-none">
+                    <span className="font-mono text-[11px] text-muted/60 select-none [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity">
                       ↗ GitHub
                     </span>
                   </div>
@@ -153,7 +164,7 @@ export default function PortfolioView({
 
           {devRaw && (
             <details className="mt-8 text-xs text-muted/50">
-              <summary className="cursor-pointer select-none hover:text-muted transition-colors">
+              <summary className="cursor-pointer select-none rounded focus-ring hover:text-muted transition-colors duration-200">
                 Raw Claude output (dev only)
               </summary>
               <pre className="mt-2 p-4 bg-border/30 rounded-lg overflow-auto text-fg/60">
@@ -166,10 +177,11 @@ export default function PortfolioView({
 
       {showFooter && (
         <footer className="border-t border-border bg-bg">
-          <div className="max-w-3xl mx-auto px-6 py-12 text-center">
+          <div className="max-w-3xl mx-auto page-x py-10 sm:py-12 text-center">
             <a
               href="/"
-              className="group inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-fg transition-colors"
+              className="group inline-flex items-center justify-center gap-2 min-h-11 px-3 focus-ring text-sm font-medium text-muted hover:text-fg active:text-fg transition-colors duration-200"
+              style={{ transitionTimingFunction: "var(--ease-out)" }}
             >
               Build your genfolio
               <svg

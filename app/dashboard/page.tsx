@@ -38,13 +38,14 @@ export default async function DashboardPage() {
             href={`/${username}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-muted hover:text-fg transition-colors"
+            className="toolbar-btn focus-ring text-xs text-muted hover:text-fg active:text-fg transition-colors duration-200"
+            style={{ transitionTimingFunction: "var(--ease-out)" }}
           >
             View public
           </Link>
           <CopyButton url={portfolioUrl} />
           <form
-            className="inline-flex items-center m-0"
+            className="inline-flex items-center m-0 p-0"
             action={async () => {
               "use server";
               await signOut({ redirectTo: "/" });
@@ -52,7 +53,8 @@ export default async function DashboardPage() {
           >
             <button
               type="submit"
-              className="text-xs text-muted hover:text-fg transition-colors"
+              className="toolbar-btn focus-ring text-xs text-muted hover:text-fg active:text-fg transition-colors duration-200"
+              style={{ transitionTimingFunction: "var(--ease-out)" }}
             >
               Sign out
             </button>

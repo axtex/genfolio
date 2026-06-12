@@ -7,15 +7,15 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg">
-      <header className="px-8 pt-8 shrink-0">
+      <header className="page-x pt-6 sm:pt-8 shrink-0">
         <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted select-none">
           genfolio
         </span>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6 py-16">
-        <div className="max-w-2xl w-full flex flex-col items-center text-center gap-10">
-          <h1 className="font-display font-semibold text-5xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight text-fg">
+      <main className="flex-1 flex items-center justify-center page-x py-12 sm:py-16">
+        <div className="max-w-2xl w-full flex flex-col items-center text-center gap-8 sm:gap-10">
+          <h1 className="font-display font-semibold text-[2.25rem] leading-[1.08] sm:text-6xl md:text-7xl sm:leading-[1.05] tracking-tight text-fg text-balance">
             Sign in.
             <br />
             Stand out.
@@ -33,7 +33,8 @@ export default async function Home() {
           >
             <button
               type="submit"
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 bg-fg text-bg text-sm font-medium tracking-wide rounded hover:bg-fg/90 transition-colors"
+              className="focus-ring inline-flex items-center justify-center gap-2.5 min-h-11 px-7 py-3.5 bg-fg text-bg text-sm font-medium tracking-wide rounded hover:bg-fg/90 active:scale-[0.98] transition-[color,transform] duration-200"
+              style={{ transitionTimingFunction: "var(--ease-out)" }}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -49,7 +50,7 @@ export default async function Home() {
       </main>
 
       <section className="border-t border-border shrink-0">
-        <div className="max-w-3xl mx-auto px-8 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
+        <div className="max-w-3xl mx-auto page-x py-10 sm:py-12 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
           {[
             { n: "01", text: "Sign in with GitHub." },
             { n: "02", text: "Get an AI-written bio and project descriptions." },
@@ -66,7 +67,7 @@ export default async function Home() {
       </section>
 
       <footer className="border-t border-border shrink-0">
-        <div className="px-8 py-5 flex items-center justify-between">
+        <div className="page-x py-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-muted/50 select-none">
             genfolio
           </span>

@@ -13,8 +13,11 @@ export default function CopyButton({ url }: { url: string }) {
 
   return (
     <button
+      type="button"
       onClick={copy}
-      className="text-xs text-muted hover:text-fg transition-colors"
+      aria-live="polite"
+      className="toolbar-btn focus-ring text-xs text-muted hover:text-fg active:text-fg transition-colors duration-200"
+      style={{ transitionTimingFunction: "var(--ease-out)" }}
     >
       {copied ? "Copied!" : "Copy link"}
     </button>

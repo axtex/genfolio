@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Bricolage_Grotesque,
   Plus_Jakarta_Sans,
@@ -26,6 +26,12 @@ const mono = JetBrains_Mono({
   display: "swap",
   weight: ["400", "500"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "genfolio — AI-powered developer portfolios",
