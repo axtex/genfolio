@@ -1,6 +1,6 @@
 # genfolio
 
-Sign in with GitHub. Get a beautiful, AI-written portfolio page in seconds — no manual editing required.
+Sign in with GitHub. Get a clean, AI-written portfolio page in seconds — no manual editing required.
 
 ## Live demo
 
