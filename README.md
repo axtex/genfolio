@@ -3,6 +3,7 @@
 Sign in with GitHub. Get a clean, AI-written portfolio page in seconds — no manual editing required.
 
 **Live at:** https://genfolio-hazel.vercel.app
+
 **Example portfolio:** https://genfolio-hazel.vercel.app/axtex (Avneet Thind — generated from GitHub, ISR-cached)
 
 ---
