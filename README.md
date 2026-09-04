@@ -5,11 +5,25 @@ Sign in with GitHub. Get a clean, AI-written portfolio page in seconds — no ma
 ## Live demo
 
 - **App:** https://genfolio-hazel.vercel.app
-- **Example portfolio:** https://genfolio-hazel.vercel.app/axtex
+- **Example portfolio:** https://genfolio-hazel.vercel.app/axtex (Avneet Thind — generated from GitHub, ISR-cached)
+
+## Why it exists
+
+Developer portfolios are either a raw GitHub profile or hours of copywriting and a custom site. genfolio turns an existing GitHub account into a shareable page in one OAuth click. It picks repos from real signals (pinned → `featured` topic → ranked recency) so the page is your best work, not your six most recently touched folders.
+
+## Stack
+
+| Frontend | Backend / Cloud |
+|---|---|
+| Next.js 16 (App Router) | Vercel (hosting + edge cache) |
+| TypeScript | Claude API (claude-haiku-4-5) |
+| Tailwind CSS | GitHub REST + GraphQL API |
+| React 19 | NextAuth v5 (GitHub OAuth) |
+| | `unstable_cache` + ISR |
 
 ## What it does
 
-genfolio connects to your GitHub account, intelligently selects your best repositories, and uses Claude to write your bio and project descriptions in a natural, technical voice. The result is a public portfolio page at `/yourusername` that you can share immediately. Everything is cached so the page loads fast for visitors, and you can refresh your portfolio any time to pull in new work. No forms, no templates, no writing.
+genfolio connects to your GitHub account, selects your best repositories, and uses Claude to write your bio and project descriptions in a natural, technical voice. After sign-in you get a public page at `/yourusername` that you can share immediately; from the dashboard you can copy that URL or refresh to regenerate from your latest GitHub data. No forms, no templates, no writing.
 
 ## Technical highlights
 
@@ -18,6 +32,12 @@ genfolio connects to your GitHub account, intelligently selects your best reposi
 - **Prompt caching on Claude** — the system prompt is sent with `cache_control: ephemeral`, so repeated generations for different users reuse the cached prompt tokens instead of paying to re-process them.
 - **Stale-while-revalidate** — hitting the refresh button calls `revalidateTag(username)` to bust all three cache layers (user, repos, portfolio) atomically, so the next request regenerates fresh content without a visible loading state for other visitors.
 - **Auth-gated mutations** — server actions verify the session before allowing cache invalidation, so users can only refresh their own portfolio.
+
+## Design decisions
+
+- **Repo quality without a CMS** — pinned → `featured` topic → ranked recency, so empty or junk repos do not become the portfolio.
+- **Cost and latency** — 24h `unstable_cache` + ISR + Claude prompt cache so visitors do not wait on GitHub/Claude and you do not pay full prompt tokens per user.
+- **Refresh without breaking other visitors** — `revalidateTag(username)` busts user/repos/portfolio together; other users’ caches stay intact.
 
 ## Architecture
 
@@ -34,15 +54,31 @@ GitHub OAuth
  Public portfolio page
      │
      ▼
- unstable_cache (24h) → ISR / CDN edge cache
+ unstable_cache (24h, server) → ISR / CDN edge cache
 ```
 
-## Stack
+## Getting started
 
-| Frontend | Backend / Cloud |
+```bash
+git clone https://github.com/axtex/genfolio.git
+cd genfolio
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Then open [http://localhost:3000](http://localhost:3000).
+
+Required environment variables (see `.env.example`):
+
+| Variable | Purpose |
 |---|---|
-| Next.js 16 (App Router) | Vercel (hosting + edge cache) |
-| TypeScript | Claude API (claude-haiku-4-5) |
-| Tailwind CSS | GitHub REST + GraphQL API |
-| Fraunces + Plus Jakarta Sans | NextAuth v5 (GitHub OAuth) |
-| | `unstable_cache` + ISR |
+| `AUTH_SECRET` | Auth.js session secret (`npx auth secret`) |
+| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub OAuth App credentials |
+| `ANTHROPIC_API_KEY` | Claude API key for bio + project copy |
+| `GITHUB_TOKEN` | Optional. Fallback for public GitHub fetches; required to read pinned repos |
+
+Create a GitHub OAuth App at [github.com/settings/developers](https://github.com/settings/developers):
+
+- **Homepage URL:** `http://localhost:3000`
+- **Authorization callback URL:** `http://localhost:3000/api/auth/callback/github`
