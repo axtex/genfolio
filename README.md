@@ -2,14 +2,16 @@
 
 Sign in with GitHub. Get a clean, AI-written portfolio page in seconds — no manual editing required.
 
-## Live demo
+**Live at:** https://genfolio-hazel.vercel.app
+**Example portfolio:** https://genfolio-hazel.vercel.app/axtex (Avneet Thind — generated from GitHub, ISR-cached)
 
-- **App:** https://genfolio-hazel.vercel.app
-- **Example portfolio:** https://genfolio-hazel.vercel.app/axtex (Avneet Thind — generated from GitHub, ISR-cached)
+---
 
 ## Why it exists
 
 Developer portfolios are either a raw GitHub profile or hours of copywriting and a custom site. genfolio turns an existing GitHub account into a shareable page in one OAuth click. It picks repos from real signals (pinned → `featured` topic → ranked recency) so the page is your best work, not your six most recently touched folders.
+
+---
 
 ## Stack
 
@@ -21,9 +23,13 @@ Developer portfolios are either a raw GitHub profile or hours of copywriting and
 | React 19 | NextAuth v5 (GitHub OAuth) |
 | | `unstable_cache` + ISR |
 
+---
+
 ## What it does
 
 genfolio connects to your GitHub account, selects your best repositories, and uses Claude to write your bio and project descriptions in a natural, technical voice. After sign-in you get a public page at `/yourusername` that you can share immediately; from the dashboard you can copy that URL or refresh to regenerate from your latest GitHub data. No forms, no templates, no writing.
+
+---
 
 ## Technical highlights
 
@@ -33,11 +39,15 @@ genfolio connects to your GitHub account, selects your best repositories, and us
 - **Stale-while-revalidate** — hitting the refresh button calls `revalidateTag(username)` to bust all three cache layers (user, repos, portfolio) atomically, so the next request regenerates fresh content without a visible loading state for other visitors.
 - **Auth-gated mutations** — server actions verify the session before allowing cache invalidation, so users can only refresh their own portfolio.
 
+---
+
 ## Design decisions
 
 - **Repo quality without a CMS** — pinned → `featured` topic → ranked recency, so empty or junk repos do not become the portfolio.
 - **Cost and latency** — 24h `unstable_cache` + ISR + Claude prompt cache so visitors do not wait on GitHub/Claude and you do not pay full prompt tokens per user.
 - **Refresh without breaking other visitors** — `revalidateTag(username)` busts user/repos/portfolio together; other users’ caches stay intact.
+
+---
 
 ## Architecture
 
@@ -56,6 +66,8 @@ GitHub OAuth
      ▼
  unstable_cache (24h, server) → ISR / CDN edge cache
 ```
+
+---
 
 ## Getting started
 
@@ -82,3 +94,5 @@ Create a GitHub OAuth App at [github.com/settings/developers](https://github.com
 
 - **Homepage URL:** `http://localhost:3000`
 - **Authorization callback URL:** `http://localhost:3000/api/auth/callback/github`
+
+---
