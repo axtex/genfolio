@@ -1,7 +1,16 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import type { GitHubUser } from "@/lib/github";
 
-export default function PortfolioNotGenerated({ user }: { user: GitHubUser }) {
+export default async function PortfolioNotGenerated({
+  user,
+}: {
+  user: GitHubUser;
+}) {
+  const session = await auth();
+  const isOwner =
+    session?.user?.login?.toLowerCase() === user.login.toLowerCase();
+
   return (
     <div className="min-h-screen bg-bg flex flex-col items-center justify-center page-x text-center gap-6">
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -19,15 +28,16 @@ export default function PortfolioNotGenerated({ user }: { user: GitHubUser }) {
         <p className="font-mono text-xs text-muted">@{user.login}</p>
       </div>
       <p className="text-sm text-muted max-w-[40ch]">
-        This GitHub user hasn&#8217;t generated a genfolio yet. Sign in to create
-        yours.
+        {isOwner
+          ? "Your public genfolio isn’t live yet. Open the dashboard to generate it."
+          : "This GitHub user hasn’t generated a genfolio yet. Sign in to create yours."}
       </p>
       <Link
-        href="/"
+        href={isOwner ? "/dashboard" : "/"}
         className="group focus-ring inline-flex items-center justify-center gap-1.5 min-h-11 px-4 text-sm font-medium text-fg hover:text-accent active:text-accent transition-colors duration-200"
         style={{ transitionTimingFunction: "var(--ease-out)" }}
       >
-        Build your genfolio
+        {isOwner ? "Open dashboard" : "Build your genfolio"}
         <svg
           className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
           fill="none"

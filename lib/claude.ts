@@ -127,17 +127,32 @@ function cacheOpts(login: string): { tags: string[]; revalidate: number } {
   return { tags: [login], revalidate: 86400 };
 }
 
+// One wrapper for generate + peek. unstable_cache puts cb.toString() in the
+// key, so two different inner functions never share an entry — which is why
+// "View public" used to miss after the dashboard had already generated.
+function fromPortfolioCache(
+  login: string,
+  compute: (() => Promise<PortfolioContent>) | null
+): Promise<PortfolioContent> {
+  return unstable_cache(
+    async (): Promise<PortfolioContent> => {
+      if (!compute) throw new PortfolioCacheMiss();
+      return compute();
+    },
+    portfolioCacheKeyParts(login),
+    cacheOpts(login)
+  )();
+}
+
 // Fills (or hits) the 24h per-login Claude cache. Dashboard / refresh only.
 // Public pages must use getCachedPortfolio so a miss does not call Claude.
 export async function generatePortfolio(
   user: GitHubUser,
   repos: Repo[]
 ): Promise<PortfolioContent> {
-  return unstable_cache(
-    () => generatePortfolioContent(repos, user.login),
-    portfolioCacheKeyParts(user.login),
-    cacheOpts(user.login)
-  )();
+  return fromPortfolioCache(user.login, () =>
+    generatePortfolioContent(repos, user.login)
+  );
 }
 
 // Same cache key as generatePortfolio. On miss the inner function throws and
@@ -147,13 +162,7 @@ export async function getCachedPortfolio(
   login: string
 ): Promise<PortfolioContent | null> {
   try {
-    return await unstable_cache(
-      async (): Promise<PortfolioContent> => {
-        throw new PortfolioCacheMiss();
-      },
-      portfolioCacheKeyParts(login),
-      cacheOpts(login)
-    )();
+    return await fromPortfolioCache(login, null);
   } catch (err) {
     if (isPortfolioCacheMiss(err)) return null;
     throw err;
