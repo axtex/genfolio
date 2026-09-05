@@ -1,6 +1,7 @@
 import type { PortfolioContent } from "@/lib/claude";
 import type { GitHubUser, Repo } from "@/lib/github";
-import ExpandableBio from "./ExpandableBio";
+import Link from "next/link";
+import Bio from "./Bio";
 
 type PortfolioViewProps = {
   username: string;
@@ -82,7 +83,7 @@ export default function PortfolioView({
                 className="mt-4 animate-fade-up"
                 style={{ animationDelay: "100ms" }}
               >
-                <ExpandableBio bio={portfolio.bio} />
+                <Bio bio={portfolio.bio} />
               </div>
             </div>
 
@@ -178,7 +179,7 @@ export default function PortfolioView({
       {showFooter && (
         <footer className="border-t border-border bg-bg">
           <div className="max-w-3xl mx-auto page-x py-10 sm:py-12 text-center">
-            <a
+            <Link
               href="/"
               className="group inline-flex items-center justify-center gap-2 min-h-11 px-3 focus-ring text-sm font-medium text-muted hover:text-fg active:text-fg transition-colors duration-200"
               style={{ transitionTimingFunction: "var(--ease-out)" }}
@@ -198,7 +199,7 @@ export default function PortfolioView({
                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                 />
               </svg>
-            </a>
+            </Link>
           </div>
         </footer>
       )}

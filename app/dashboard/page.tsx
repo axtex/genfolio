@@ -2,8 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import PortfolioView from "@/components/PortfolioView";
-import { fetchGitHubUser, getPortfolioRepos } from "@/lib/github";
-import { generatePortfolio } from "@/lib/claude";
+import { loadOwnerPortfolio } from "@/lib/portfolio";
 import RefreshButton from "./RefreshButton";
 import CopyButton from "./CopyButton";
 
@@ -15,9 +14,7 @@ export default async function DashboardPage() {
   }
 
   const username = session.user.login;
-  const user = await fetchGitHubUser(username);
-  const repos = await getPortfolioRepos(username);
-  const portfolio = await generatePortfolio(user, repos);
+  const { user, repos, portfolio } = await loadOwnerPortfolio(username);
 
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`

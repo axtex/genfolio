@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import PortfolioView from "@/components/PortfolioView";
-import { fetchGitHubUser, getPortfolioRepos } from "@/lib/github";
-import { generatePortfolio } from "@/lib/claude";
+import PortfolioNotGenerated from "@/components/PortfolioNotGenerated";
+import { loadPublicPortfolio } from "@/lib/portfolio";
 
 export const revalidate = 86400;
 
@@ -11,18 +12,30 @@ type Props = { params: Promise<{ username: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
   try {
-    const user = await fetchGitHubUser(username);
-    const repos = await getPortfolioRepos(username);
-    const portfolio = await generatePortfolio(user, repos);
-    const firstSentence = portfolio.bio.split(/\.[\s]|\.$/)[0] + ".";
-    const title = `${user.name ?? user.login} — genfolio`;
+    const result = await loadPublicPortfolio(username);
+    if (result.status === "not_found") {
+      return { title: "genfolio" };
+    }
+    const displayName = result.user.name ?? result.user.login;
+    const title = `${displayName} — genfolio`;
+    if (result.status === "not_generated") {
+      return {
+        title,
+        description: `@${result.user.login} has not generated a genfolio yet.`,
+        openGraph: {
+          title,
+          images: [{ url: result.user.avatar_url }],
+        },
+      };
+    }
+    const firstSentence = result.portfolio.bio.split(/\.[\s]|\.$/)[0] + ".";
     return {
       title,
       description: firstSentence,
       openGraph: {
         title,
         description: firstSentence,
-        images: [{ url: user.avatar_url }],
+        images: [{ url: result.user.avatar_url }],
       },
     };
   } catch {
@@ -32,23 +45,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function UserPortfolioPage({ params }: Props) {
   const { username } = await params;
+  const result = await loadPublicPortfolio(username);
 
-  try {
-    const user = await fetchGitHubUser(username);
-    const repos = await getPortfolioRepos(username);
-    const portfolio = await generatePortfolio(user, repos);
+  if (result.status === "not_found") notFound();
 
-    return (
-      <PortfolioView
-        username={username}
-        user={user}
-        repos={repos}
-        portfolio={portfolio}
-      />
-    );
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "";
-    if (msg.includes("not found")) notFound();
-    throw err;
+  if (result.status === "not_generated") {
+    // Do not ISR an empty page — after the owner generates, the next
+    // public request should see the cached Claude result.
+    noStore();
+    return <PortfolioNotGenerated user={result.user} />;
   }
+
+  return (
+    <PortfolioView
+      username={username}
+      user={result.user}
+      repos={result.repos}
+      portfolio={result.portfolio}
+    />
+  );
 }

@@ -2,16 +2,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { unstable_cache } from "next/cache";
 import type { GitHubUser, Repo } from "@/lib/github";
+import {
+  parsePortfolioContent,
+  textFromClaudeMessage,
+  type PortfolioContent,
+} from "@/lib/claude-parse";
 
-export interface PortfolioContent {
-  bio: string;
-  projects: Array<{
-    name: string;
-    description: string;
-  }>;
-}
-
-const client = new Anthropic();
+export type { PortfolioContent } from "@/lib/claude-parse";
 
 const SYSTEM_PROMPT = `You are an expert technical writer who creates compelling developer portfolio content.
 
@@ -53,7 +50,33 @@ const OUTPUT_SCHEMA = {
   additionalProperties: false,
 };
 
-async function _generatePortfolioContent(
+export const PORTFOLIO_CACHE_KEY_PREFIX = "claude-portfolio";
+
+export function portfolioCacheKeyParts(login: string): [string, string] {
+  return [PORTFOLIO_CACHE_KEY_PREFIX, login];
+}
+
+class PortfolioCacheMiss extends Error {
+  constructor() {
+    super("PORTFOLIO_CACHE_MISS");
+    this.name = "PortfolioCacheMiss";
+  }
+}
+
+function isPortfolioCacheMiss(err: unknown): boolean {
+  return (
+    err instanceof PortfolioCacheMiss ||
+    (err instanceof Error &&
+      (err.name === "PortfolioCacheMiss" ||
+        err.message === "PORTFOLIO_CACHE_MISS"))
+  );
+}
+
+function getClient(): Anthropic {
+  return new Anthropic();
+}
+
+export async function generatePortfolioContent(
   repos: Repo[],
   githubUsername: string
 ): Promise<PortfolioContent> {
@@ -65,7 +88,7 @@ async function _generatePortfolioContent(
     readme_excerpt: repo.readme ? repo.readme.slice(0, 600) : null,
   }));
 
-  const response = await client.messages.create({
+  const response = await getClient().messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 1024,
     output_config: {
@@ -86,31 +109,53 @@ async function _generatePortfolioContent(
         role: "user",
         content: `Generate portfolio content for GitHub user "${githubUsername}".
 
-Here are their ${repos.length} most recently active repositories. Return a projects entry for each one (use the exact name field):
+Here are ${repos.length} repositories selected for their portfolio (pinned first, then featured, then ranked recency). Return a projects entry for each one (use the exact name field):
 
 ${JSON.stringify(repoContext, null, 2)}`,
       },
     ],
   });
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Claude returned no text content");
-  }
-
-  return JSON.parse(textBlock.text) as PortfolioContent;
+  return parsePortfolioContent(
+    textFromClaudeMessage(
+      response.content as Array<{ type: string; text?: string }>
+    )
+  );
 }
 
-// Cached wrapper — Claude is only called once per user per 24 hours.
-// All three cache entries (user, repos, portfolio) share the same tag
-// so revalidateTag(username) busts them all together.
+function cacheOpts(login: string): { tags: string[]; revalidate: number } {
+  return { tags: [login], revalidate: 86400 };
+}
+
+// Fills (or hits) the 24h per-login Claude cache. Dashboard / refresh only.
+// Public pages must use getCachedPortfolio so a miss does not call Claude.
 export async function generatePortfolio(
   user: GitHubUser,
   repos: Repo[]
 ): Promise<PortfolioContent> {
   return unstable_cache(
-    () => _generatePortfolioContent(repos, user.login),
-    ["claude-portfolio", user.login],
-    { tags: [user.login], revalidate: 86400 }
+    () => generatePortfolioContent(repos, user.login),
+    portfolioCacheKeyParts(user.login),
+    cacheOpts(user.login)
   )();
+}
+
+// Same cache key as generatePortfolio. On miss the inner function throws and
+// the error is not stored, so this never writes a "not generated" entry and
+// never calls Claude. On hit, Next returns the value cached by generatePortfolio.
+export async function getCachedPortfolio(
+  login: string
+): Promise<PortfolioContent | null> {
+  try {
+    return await unstable_cache(
+      async (): Promise<PortfolioContent> => {
+        throw new PortfolioCacheMiss();
+      },
+      portfolioCacheKeyParts(login),
+      cacheOpts(login)
+    )();
+  } catch (err) {
+    if (isPortfolioCacheMiss(err)) return null;
+    throw err;
+  }
 }

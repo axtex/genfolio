@@ -12,7 +12,7 @@ export default function NotFound() {
 
       <div className="-mt-2 space-y-5">
         <p className="text-sm text-muted">
-          This portfolio doesn&#8217;t exist yet.
+          No GitHub user was found at this URL.
         </p>
         <Link
           href="/"

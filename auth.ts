@@ -9,10 +9,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, account, profile }) {
-      if (account?.access_token) {
-        token.accessToken = account.access_token;
-      }
+    async jwt({ token, profile }) {
       // Capture the GitHub login (username) on first sign-in.
       // profile is only present during the initial OAuth exchange.
       if (profile && "login" in profile) {
@@ -22,7 +19,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string;
       if (token.login) {
         session.user.login = token.login as string;
       }
